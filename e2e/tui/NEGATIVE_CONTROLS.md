@@ -18659,3 +18659,18 @@ The cells "Under `own`" and "Under `read_only`" are prose and are not checked.
 ```sh
 go test -count=1 -run '^TestRestrictedTableNamesEveryVerbItAllows$' ./internal/session/
 ```
+
+## A layout saved, then a switch of workspace at once
+
+`TestALayoutSavedThenLeftHoldsItsWorkspace` saves a layout of three panes on workspace 1 and presses alt+2 at once. The knob `layout_template_hold_ms=1000` holds the save request, so the switch always reaches the daemon first. The saved layout must be trio with three panes, and the dock must not say the save failed.
+
+Run on 2026-11-21 on Linux, real backend.
+
+| Control | Test | Result | Verdict |
+| --- | --- | --- | --- |
+| No workspace in the request (main with the knob) | `TestALayoutSavedThenLeftHoldsItsWorkspace` | 3 of 3 runs: "the saved layouts are [], want trio with three panes". The dock had said "Layout saved: trio". | **caught** |
+| This change | `TestALayoutSavedThenLeftHoldsItsWorkspace` | 8 of 8 runs pass | fixed |
+
+```sh
+TUIOS_E2E=1 TUIOS_E2E_BIN=/path/to/tuios go test -count=1 -v -run '^TestALayoutSavedThenLeftHoldsItsWorkspace$' .
+```
